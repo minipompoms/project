@@ -1,64 +1,81 @@
 package project;
 
-import java.util.Scanner;
+
+
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class PlayAnagrams {
-	static Scanner keyboard = new Scanner(System.in);
 
-	public static void main(String[] args) {
-		
-		ProjectAnagram newGame = new ProjectAnagram();
-		int userChoice;
-		char[] letters = new char[12];
+	public static void main(String[] args) throws IOException
+	{
+		BufferedReader newGame = new BufferedReader (new InputStreamReader(System.in));
+		final int FINAL_LEVEL = 5;
 		
 		while (true) {
-			userChoice = menu();
-			// clear buffer
-			keyboard.nextLine();
-			switch (userChoice) {
-			case 1:
-				System.out.println("Enter your name.");
-				String user = keyboard.nextLine();
-				newGame.setUserName(user);
-				System.out.println(
-						"To gain points, form words from the 12 letters below. Enter one word at a time. Words must be at least 3 letters.\n");
-				letters = newGame.generateLetters();
-				String word = null;
-			case 2:
-				//print out 12 letters
-					for (int i = 0; i < letters.length; i++) {
-						System.out.print(letters[i] + " ");
-					}
-					word = keyboard.nextLine();
-					//check the letter against the available letters and the list
-					if ((newGame.checkLettersAndLength(letters, word.toUpperCase())) == true) {
-						if (newGame.checkWord(word.toUpperCase()) == true) {
-							newGame.addPoints(word);
-						} else {
-							System.out.println("Sorry, that's not in our dictionary.");
-						}
-					} else {
-						System.out.println(
-								"Invalid word. Make sure your word is at least 3 letters and uses the letters provided.");
-					}
+			System.out.println ("Let's Play Anagrams!");
+			System.out.println ("\nThe rules of the game are as follows:\n"
+					+ "\nYou start at Level 2, and enter only two-letter words until "
+					+ "\nyou reach the next level. When you reach Level 3,"
+					+ "\nyou input 3-letter words only... and so on."
+					+ "\nThe game ends when you reach level 5 or enter 3 incorrect words."
+					+ "\n\nHave Fun!\n");
+			ProjectAnagram game = new ProjectAnagram("words.txt");
+			
+			System.out.println("Your starting level: "+game.getLevel() 
+			+ "\tYour starting score: "+game.getScore());
+			
+			
+			String play = game.generatedLetters();			
+			
+			while (true) {
+				System.out.println("\nYour scrambled letters are: " + play);
+				System.out.println ("Enter a "+game.getLevel() + "-letter word:");
+				String word = newGame.readLine();
 				
-				break;
-			case 3:
-				System.out.println("\nThanks for playing! " + newGame.getUserName()  + "'s total score is " + newGame.getTotalPoints());
-				System.exit(0);
-				break;
-			default:
-				System.out.println("Invalid choice.\n");
-				userChoice = menu();
-				break;
+				if (game.isValidWord(word) && game.isContainedInScrambledLetters(word, play)) {
+					if (game.isValidWord(word)) {
+						System.out.println ("CORRECT");						
+						game.updateScore(1);
+						System.out.println("Your current level: "+game.getLevel());
+						System.out.println("Your current score: "+game.getScore());
+					} else {
+						System.out.println ("Invalid word. Please try again.");
+						game.updateIncorrects();
+					}
+				} else if (!game.isValidWord(word)) {
+					System.out.println ("Invalid word length.");
+					game.updateIncorrects();
+				} else {
+					System.out.println ("Characters of the word entered are not present in scrambled letters");
+					game.updateIncorrects();
+				}
+				
+				if (game.getNumIncorrects() == 3) {
+					System.out.println ("\nYou have 3 incorrects. Sorry.. GoodBye!");
+					break;
+				}
+				
+				if (game.getLevel() == FINAL_LEVEL) {
+					System.out.println("\nCONGRATS!! You have completed all the levels");
+					System.out.println("Your final score: "+game.getScore());
+					break;
+				}
 			}
+			
+			System.out.println ("\nWould you like to play another game?  (Enter 'y' to continue, or 'n' to quit): ");
+			String choice = newGame.readLine();
+			
+			if (choice.toLowerCase().equals("n"))
+				break;
 		}
-	}
-
-	public static int menu() {
-		System.out.println("Enter 1 to start a new game, 2 to add a word and 3 to exit.");
-		int choice = keyboard.nextInt();
-		return choice;
+		
 	}
 
 }
+
+	
+
+

@@ -1,131 +1,136 @@
+
 package project;
 
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 
 public class ProjectAnagram {
 
-	private static Scanner input = new Scanner(System.in);
 
-	private ArrayList<String> dictionary;
-	// private ArrayList<String> match;
-	private String userName;
+	private HashMap<String,Boolean> dictionary;
+	private Random r;
+	private int level;
 	private int totalPoints;
+	private int numIncorrects;
 
 	// constructor
-	public ProjectAnagram() {
-		try {
-			start();
-		} catch (FileNotFoundException e) {
+	public ProjectAnagram(String filename) throws IOException
+	{
 			
-		System.out.println("Contact IT, problem occured.");
+		dictionary = new HashMap<String,Boolean>();
+		r = new Random();
+		BufferedReader readFromFile = new BufferedReader(new FileReader("src/project/words.txt"));
+		String line = "";
+	
+		while ( (line = readFromFile.readLine()) != null ) {
+			dictionary.put(line.toLowerCase(), true); // creates dictionary of valid words
 		}
-		// String random = input.nextLine();
+		
+		readFromFile.close();
+		
+		level = 2;
+		totalPoints = 0;
+		numIncorrects = 0;
 	}
 
-	private void start() throws FileNotFoundException {
-		dictionary = new ArrayList<String>();
-		readFromFile();
-		// match = new ArrayList<String>();
-	}
-
-	private void readFromFile() throws FileNotFoundException {
-		File afile = new File("words.txt");
-		while (input.hasNextLine()) {
-			dictionary.add(input.nextLine());
-		}
-
-	}
-
-	public boolean checkLettersAndLength(char[] letters, String word) {
-		boolean valid = false;
-		if (word.length() < 3) {
-			valid = false;
-		}
-		// break up letters
-		// check each char in the array against the list of chars
-		for (int i = 0; i < word.length(); i++) {
-			
-				if (word.charAt(i) != letters[0] && word.charAt(i) != letters[1] 
-						&& word.charAt(i) != letters[2] && word.charAt(i) != letters[3] 
-						&& word.charAt(i) != letters[4] && word.charAt(i) != letters[5] 
-						&& word.charAt(i) != letters[6] && word.charAt(i) != letters[7] 
-						&& word.charAt(i) != letters[8] && word.charAt(i) != letters[9] 
-						&& word.charAt(i) != letters[10] && word.charAt(i) != letters[11]) {
-					
-					valid = false;
-					break;
-			}else{
-				valid = true;	
-			}
-			
-		}
-		return valid;
-	}
-
-	public boolean checkWord(String word) {
-		boolean isWord = false;
-		// compare to words in dictionary
-		for (String str : dictionary) {
-			if (word.equalsIgnoreCase(str)) {
-				isWord = true;
-				// if it finds the word, break out and return true
-				break;
-			} else {
-				isWord = false;
-			}
-		}
-
-		return isWord;
-	}
-
-	public char[] generateLetters() {
-		// all valid letters
-		final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		final int N = alphabet.length();
-		char[] letters = new char[12];
-		int rand;
-
-		Random r = new Random();
-		// generate 12 letters
-		for (int i = 0; i < 12; i++) {
-			// generate a number between 1 and 26
-			rand = r.nextInt(N - 1);
-			// add to letter list
-			letters[i] = alphabet.charAt(rand);
-
-		}
-		return letters;
-	}
-
-	public void addPoints(String word) {
-
-		// no points for first 2 letters, 1 more for each additional
-		totalPoints += (word.length() - 2);
-
-	}
-
-	public int getTotalPoints() {
-		return this.totalPoints;
-	}
-
-	public void setUserName(String s) {
-		this.userName = s;
-	}
-
-	public String getUserName() {
-		return this.userName;
+	public void updateIncorrects() 
+	{
+		numIncorrects++;
 	}
 	
-	/*public StringBuilder getDict(){
-		StringBuilder list = new StringBuilder();
-		for (String word: dictionary){
-			list.append(word);
+	public int getNumIncorrects() 
+	{
+		return numIncorrects;
+	}
+	
+	public int getLevel() 
+	{
+		return level;
+	}
+	
+	public int getScore() 
+	{
+		return totalPoints;
+	}
+	
+	public void updateLevel() 
+	{
+		if (level == 2 && totalPoints == 2) {
+			level++;
+		} else if (level == 3 && totalPoints == 6) {
+			level++;
+		} else if (level == 4 && totalPoints == 8) {
+			level++;
+		}		
+	}
+	
+
+	public void updateScore(int increment) 
+	{
+		totalPoints += increment;
+		updateLevel();
+	}
+	
+	public boolean isValidWord(String word) 
+	{
+		return word.length() == level;
+	}
+	
+	
+	public boolean isContainedInScrambledLetters (String word, String lets) 
+	{
+		HashMap<Character, Integer> scrambled = new HashMap<Character, Integer> ();
+		// break up letters
+		
+		for (int i = 0; i < lets.length(); i++) {
+			if (scrambled.containsKey(lets.charAt(i))) {
+				scrambled.put(lets.charAt(i), scrambled.get(lets.charAt(i))+1);
+			} else {
+				scrambled.put(lets.charAt(i), 1);
+			}
 		}
-			
-		return list;
-	}*/
+		
+		for (int i = 0; i < word.length(); i++) {
+			if (scrambled.containsKey(word.charAt(i))) {
+				if (scrambled.get(word.charAt(i)) == 0) {
+					return false;
+				} else {
+					scrambled.put(word.charAt(i), scrambled.get(word.charAt(i))-1);
+				}
+			} else {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public String generateRandomVowel() 
+	{
+		char[] vowel = { 'a', 'e', 'i', 'o', 'u' };
+		return vowel[r.nextInt(vowel.length)]+"";
+	}
+	
+	public String generatedLetters() 
+	{
+		// gets random vowels first
+		String str = generateRandomVowel()+ " "+generateRandomVowel()+" "; 
+		// adding 10 more alphabets to the string
+		for (int i = 0; i < 10; i++) {
+			char c = (char)(r.nextInt(26) + 'a');
+			str += c + " ";
+		}
+		return str;
+	}
+
+
+	
 }

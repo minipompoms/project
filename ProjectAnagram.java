@@ -113,6 +113,19 @@ public class ProjectAnagram {
 		return true;
 	}
 	
+	public boolean isInDictionary(String word){
+		boolean found = false;
+		for (HashMap.Entry<String, Boolean> entry : dictionary.entrySet())
+		{
+		  if (entry.getKey().equals(word)){
+			  System.out.println(entry.getKey());
+			  found = true;
+			  return found;
+		  }
+		}
+		return found;
+	}
+	
 	public String generateRandomVowel() 
 	{
 		char[] vowel = { 'a', 'e', 'i', 'o', 'u' };
@@ -131,6 +144,4 @@ public class ProjectAnagram {
 		return str;
 	}
 
-
-	
 }

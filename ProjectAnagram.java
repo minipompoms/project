@@ -143,5 +143,9 @@ public class ProjectAnagram {
 		}
 		return str;
 	}
+	//for testing
+	public void setLevel(int lev){
+		level = lev;
+	}
 
 }
